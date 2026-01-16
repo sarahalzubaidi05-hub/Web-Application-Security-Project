@@ -21,12 +21,17 @@ function Login() {
       });
       
       setMessage('Login successful!');
+      localStorage.setItem('access_token', response.data.access_token);
       setUser(response.data.user);
     } catch (error) {
       setMessage(error.response?.data?.detail || 'Login failed');
     }
   };
-
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    setUser(null);
+    setMessage('');
+  };
   return (
     <div className="page-container">
       <h1 className="main-title">Web Application Vulnerability FYP</h1>
@@ -66,7 +71,7 @@ function Login() {
               <h3>Welcome, {user.username}!</h3>
               <p>Email: {user.email}</p>
               <p>User ID: {user.id}</p>
-              <button onClick={() => { setUser(null); setUsername(''); setPassword(''); }}>LOGOUT</button>
+              <<button onClick={handleLogout}>LOGOUT</button>
             </div>
           )}
           
