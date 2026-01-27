@@ -1,9 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import router
-from app.database import engine, Base
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Vulnerable Web App - SQL Injection Demo")
 
@@ -15,6 +11,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Import router AFTER app is created to avoid early SQLAlchemy load
+from app.routes import router
 app.include_router(router, prefix="/api")
 
 @app.get("/")
