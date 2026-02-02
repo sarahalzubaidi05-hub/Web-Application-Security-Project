@@ -40,3 +40,28 @@ def get_users(db: Session = Depends(get_db)):
     users = cursor.fetchall()
     cursor.close()
     return {"users": users}
+@router.post("/register")
+def register(username: str, email: str, password: str, db: Session = Depends(get_db)):
+    
+    query = f"INSERT INTO users (username, email, password) VALUES ('{username}', '{email}', '{password}')"
+    
+    try:
+        connection = db.connection()
+        cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute(query)
+        connection.commit()
+        
+    
+        user_id = cursor.lastrowid
+        cursor.close()
+        
+        return {
+            "message": "Registration successful",
+            "user": {
+                "id": user_id,
+                "username": username,
+                "email": email
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

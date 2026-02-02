@@ -34,33 +34,39 @@ function Login() {
       <div className="login-container">
         <div className="login-box">
           {!user ? (
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label>USERNAME:</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
-                  required
-                />
+            <>
+              <form onSubmit={handleLogin}>
+                <div className="form-group">
+                  <label>USERNAME:</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter username"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>PASSWORD:</label>
+                  <input
+                    type="text"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                    required
+                  />
+                </div>
+                
+                <button type="submit">LOGIN</button>
+                
+                {message && <p className={message.includes('successful') ? 'success' : 'error'}>{message}</p>}
+              </form>
+
+              <div style={{marginTop: '20px', textAlign: 'center', width: '100%'}}>
+                <p>Don't have an account? <a href="/register" style={{color: '#87CEEB', textDecoration: 'none'}}>Register here</a></p>
               </div>
-              
-              <div className="form-group">
-                <label>PASSWORD:</label>
-                <input
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-              
-              <button type="submit">LOGIN</button>
-              
-              {message && <p className={message.includes('successful') ? 'success' : 'error'}>{message}</p>}
-            </form>
+            </>
           ) : (
             <div className="user-info">
               <h3>Welcome, {user.username}!</h3>
@@ -69,11 +75,11 @@ function Login() {
               <button onClick={() => { setUser(null); setUsername(''); setPassword(''); }}>LOGOUT</button>
             </div>
           )}
-          
-          <div className="warning">
-            <p>⚠️ THIS IS A VULNERABLE APPLICATION FOR EDUCATIONAL PURPOSES ONLY</p>
-          </div>
         </div>
+      </div>
+      
+      <div className="warning">
+        <p>⚠️ THIS IS A VULNERABLE APPLICATION FOR EDUCATIONAL PURPOSES ONLY</p>
       </div>
     </div>
   );
