@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 function Login() {
@@ -7,13 +8,23 @@ function Login() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
+  const [userBio, setUserBio] = useState('');
+  const navigate = useNavigate();
 
   // Check for existing token on page load
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const userData = localStorage.getItem('user_data');
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      // Load user's bio
+      axios.get(`http://localhost:8000/api/profile/${parsedUser.username}`)
+        .then(res => {
+          console.log('Loaded bio:', res.data.bio);
+          setUserBio(res.data.bio || '');
+        })
+        .catch(err => console.error(err));
     }
   }, []);
 
@@ -33,6 +44,14 @@ function Login() {
       localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
       setUser(response.data.user);
+      
+      // Load bio after login
+      axios.get(`http://localhost:8000/api/profile/${response.data.user.username}`)
+        .then(res => {
+          console.log('Loaded bio after login:', res.data.bio);
+          setUserBio(res.data.bio || '');
+        })
+        .catch(err => console.error(err));
     } catch (error) {
       setMessage(error.response?.data?.detail || 'Login failed');
     }
@@ -42,6 +61,7 @@ function Login() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_data');
     setUser(null);
+    setUserBio('');
     setMessage('');
   };
 
@@ -52,50 +72,65 @@ function Login() {
       <div className="login-container">
         <div className="login-box">
           {!user ? (
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label>USERNAME:</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
-                  required
-                />
+            <>
+              <form onSubmit={handleLogin}>
+                <div className="form-group">
+                  <label>USERNAME:</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter username"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>PASSWORD:</label>
+                  <input
+                    type="text"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                    required
+                  />
+                </div>
+
+                <button type="submit">LOGIN</button>
+
+                {message && <p className={message.includes('successful') ? 'success' : 'error'}>{message}</p>}
+              </form>
+
+              <div style={{marginTop: '20px', textAlign: 'center', width: '100%'}}>
+                <p>Don't have an account? <a href="/register" style={{color: '#87CEEB', textDecoration: 'none'}}>Register here</a></p>
               </div>
-
-              <div className="form-group">
-                <label>PASSWORD:</label>
-                <input
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-
-              <button type="submit">LOGIN</button>
-
-              {message && <p className={message.includes('successful') ? 'success' : 'error'}>{message}</p>}
-            </form>
+            </>
           ) : (
             <div className="user-info">
               <h3>Welcome, {user.username}!</h3>
               <p>Email: {user.email}</p>
               <p>User ID: {user.id}</p>
+
+              <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                <p style={{ color: '#87CEEB', fontSize: '14px', marginBottom: '10px' }}>BIO:</p>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: userBio || 'No bio set yet' }} 
+                  style={{ color: '#fff', fontSize: '14px' }}
+                />
+              </div>
+
+              <button onClick={() => navigate('/profile')} style={{ marginTop: '15px' }}>
+                CUSTOMIZE BIO
+              </button>
+
               <button onClick={handleLogout}>LOGOUT</button>
             </div>
           )}
-
-          <div style={{marginTop: '20px', textAlign: 'center', width: '100%'}}>
-            <p>Don't have an account? <a href="/register" style={{color: '#87CEEB', textDecoration: 'none'}}>Register here</a></p>
-          </div>
         </div>
       </div>
 
       <div className="warning">
-        <p>⚠ THIS IS A VULNERABLE APPLICATION FOR EDUCATIONAL PURPOSES ONLY</p>
+        <p>⚠️ SECURE VERSION - FOR EDUCATIONAL PURPOSES ONLY</p>
       </div>
     </div>
   );

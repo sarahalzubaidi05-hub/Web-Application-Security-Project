@@ -8,6 +8,7 @@ import secrets
 from datetime import datetime, timedelta
 from jose import jwt
 import re
+import html
 
 router = APIRouter()
 
@@ -145,5 +146,40 @@ def register(username: str, email: str, password: str, db: Session = Depends(get
         }
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@router.post("/profile")
+def update_profile(username: str, bio: str, db: Session = Depends(get_db)):
+    # SECURE: Sanitize HTML input to prevent XSS
+    sanitized_bio = html.escape(bio)
+    
+    query = "UPDATE users SET bio = %s WHERE username = %s"
+    
+    try:
+        connection = db.connection()
+        cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute(query, (sanitized_bio, username))
+        connection.commit()
+        cursor.close()
+        return {"message": "Bio updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@router.get("/profile/{username}")
+def get_profile(username: str, db: Session = Depends(get_db)):
+    query = "SELECT username, bio FROM users WHERE username = %s"
+    
+    try:
+        connection = db.connection()
+        cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute(query, (username,))
+        user = cursor.fetchone()
+        cursor.close()
+        
+        if user:
+            return {"username": user["username"], "bio": user["bio"] or ""}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
