@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 function Login() {
@@ -7,6 +8,23 @@ function Login() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
+  const [userBio, setUserBio] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      // Load user's bio
+      axios.get(`http://localhost:8000/api/profile/${parsedUser.username}`)
+        .then(res => {
+          console.log('Loaded bio:', res.data.bio);
+          setUserBio(res.data.bio || '');
+        })
+        .catch(err => console.error(err));
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,6 +40,15 @@ function Login() {
       
       setMessage('Login successful!');
       setUser(response.data.user);
+      localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      
+      // Load bio after login
+      axios.get(`http://localhost:8000/api/profile/${response.data.user.username}`)
+        .then(res => {
+          console.log('Loaded bio after login:', res.data.bio);
+          setUserBio(res.data.bio || '');
+        })
+        .catch(err => console.error(err));
     } catch (error) {
       setMessage(error.response?.data?.detail || 'Login failed');
     }
@@ -72,7 +99,28 @@ function Login() {
               <h3>Welcome, {user.username}!</h3>
               <p>Email: {user.email}</p>
               <p>User ID: {user.id}</p>
-              <button onClick={() => { setUser(null); setUsername(''); setPassword(''); }}>LOGOUT</button>
+              
+              <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                <p style={{ color: '#87CEEB', fontSize: '14px', marginBottom: '10px' }}>BIO:</p>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: userBio || 'No bio set yet' }} 
+                  style={{ color: '#fff', fontSize: '14px' }}
+                />
+              </div>
+
+              <button onClick={() => navigate('/profile')} style={{ marginTop: '15px' }}>
+                CUSTOMIZE BIO
+              </button>
+              
+              <button onClick={() => { 
+                setUser(null); 
+                setUsername(''); 
+                setPassword(''); 
+                setUserBio('');
+                localStorage.removeItem('user_data');
+              }}>
+                LOGOUT
+              </button>
             </div>
           )}
         </div>

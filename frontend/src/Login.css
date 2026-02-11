@@ -75,6 +75,9 @@ body::before {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  position: relative;
+  z-index: 2;
 }
 
 .login-box {

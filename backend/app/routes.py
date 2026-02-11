@@ -90,3 +90,36 @@ def register(username: str, email: str, password: str, db: Session = Depends(get
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@router.post("/profile")
+def update_profile(username: str, bio: str, db: Session = Depends(get_db)):
+    # VULNERABLE: No sanitization - stores raw HTML/JavaScript
+    query = f"UPDATE users SET bio = '{bio}' WHERE username = '{username}'"
+    
+    try:
+        connection = db.connection()
+        cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        return {"message": "Bio updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@router.get("/profile/{username}")
+def get_profile(username: str, db: Session = Depends(get_db)):
+    query = f"SELECT username, bio FROM users WHERE username = '{username}'"
+    
+    try:
+        connection = db.connection()
+        cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute(query)
+        user = cursor.fetchone()
+        cursor.close()
+        
+        if user:
+            return {"username": user["username"], "bio": user["bio"] or ""}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
