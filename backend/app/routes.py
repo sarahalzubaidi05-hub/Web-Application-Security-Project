@@ -61,11 +61,9 @@ def login(username: str, password: str, db: Session = Depends(get_db)):
             # Generate JWT token
             access_token = create_access_token(data={"sub": username, "user_id": user["id"]})
             
-            # Create response with cookie
+            # Create response WITHOUT access_token in JSON
             response = JSONResponse({
                 "message": "Login successful",
-                "access_token": access_token,
-                "token_type": "bearer",
                 "user": {
                     "id": user["id"],
                     "username": user["username"],
@@ -73,13 +71,24 @@ def login(username: str, password: str, db: Session = Depends(get_db)):
                 }
             })
             
-            # SECURE: Hardened cookie with all flags
+            # SECURE: Set JWT in HttpOnly cookie
+            response.set_cookie(
+                key="access_token",
+                value=access_token,
+                httponly=True,      # ✅ JavaScript CANNOT access
+                secure=False,       # Set False for localhost (True in production with HTTPS)
+                samesite="strict",  # ✅ CSRF protection
+                max_age=1800,       # 30 minutes (match JWT expiry)
+                path="/"
+            )
+            
+            # SECURE: Also set session_id cookie
             response.set_cookie(
                 key="session_id",
                 value=session_token,
-                httponly=True,      # ✅ JavaScript CANNOT access
-                secure=False,       # Set False for localhost (True in production with HTTPS)
-                samesite="Strict",  # ✅ CSRF protection
+                httponly=True,
+                secure=False,
+                samesite="strict",
                 max_age=86400,      # 24 hours
                 path="/"
             )
@@ -90,8 +99,7 @@ def login(username: str, password: str, db: Session = Depends(get_db)):
             raise HTTPException(status_code=401, detail="Invalid credentials")
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:     raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @router.get("/users")
 def get_users(db: Session = Depends(get_db)):
@@ -134,16 +142,28 @@ def register(username: str, email: str, password: str, db: Session = Depends(get
         # Generate JWT token for auto-login
         access_token = create_access_token(data={"sub": username, "user_id": user_id})
         
-        return {
+        # Create response WITHOUT access_token in JSON
+        response = JSONResponse({
             "message": "Registration successful",
-            "access_token": access_token,
-            "token_type": "bearer",
             "user": {
                 "id": user_id,
                 "username": username,
                 "email": email
             }
-        }
+        })
+        
+        # SECURE: Set JWT in HttpOnly cookie
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=False,
+            samesite="strict",
+            max_age=1800,
+            path="/"
+        )
+        
+        return response
     except HTTPException:
         raise
     except Exception as e:

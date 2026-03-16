@@ -316,3 +316,30 @@ button[type="submit"]:active {
   color: #87CEEB;
   opacity: 0.7;
 }
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 45px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+  color: #87CEEB;
+}
+
+.password-toggle:hover {
+  opacity: 0.7;
+}

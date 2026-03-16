@@ -7,6 +7,8 @@ function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
 
@@ -49,12 +51,11 @@ function Register() {
           username: username,
           email: email,
           password: password
-        }
+        },
+        withCredentials: true
       });
 
       setMessage('Registration successful! Redirecting...');
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('user_data', JSON.stringify(response.data.user));
       
       setTimeout(() => {
         window.location.href = '/';
@@ -95,13 +96,22 @@ function Register() {
 
             <div className="form-group">
               <label>PASSWORD:</label>
-              <input
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                placeholder="Create password"
-                required
-              />
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="Create password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
               {password && (
                 <p className={`password-strength ${passwordStrength.toLowerCase()}`}>
                   Strength: {passwordStrength}
@@ -114,13 +124,22 @@ function Register() {
 
             <div className="form-group">
               <label>CONFIRM PASSWORD:</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
-                required
-              />
+              <div className="password-input-container">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <button type="submit">REGISTER</button>
