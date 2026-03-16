@@ -94,12 +94,13 @@ def register(username: str, email: str, password: str, db: Session = Depends(get
 @router.post("/profile")
 def update_profile(username: str, bio: str, db: Session = Depends(get_db)):
     # VULNERABLE: No sanitization - stores raw HTML/JavaScript
-    query = f"UPDATE users SET bio = '{bio}' WHERE username = '{username}'"
+    # Use parameterized query to avoid SQL syntax errors from quotes in XSS payload
+    query = "UPDATE users SET bio = %s WHERE username = %s"
     
     try:
         connection = db.connection()
         cursor = connection.connection.cursor(pymysql.cursors.DictCursor)
-        cursor.execute(query)
+        cursor.execute(query, (bio, username))
         connection.commit()
         cursor.close()
         return {"message": "Bio updated successfully"}
