@@ -16,7 +16,9 @@ function Profile() {
       setUsername(user.username);
       
       // Load existing bio
-      axios.get(`http://localhost:8000/api/profile/${user.username}`)
+      axios.get(`http://localhost:8000/api/profile/${user.username}`, {
+        withCredentials: true
+      })
         .then(res => {
           setBio(res.data.bio || '');
         })
@@ -28,7 +30,8 @@ function Profile() {
     e.preventDefault();
     try {
       await axios.post('http://localhost:8000/api/profile', null, {
-        params: { username, bio }
+        params: { username, bio },
+        withCredentials: true
       });
       setMessage('Bio saved successfully!');
       setTimeout(() => {
@@ -91,7 +94,7 @@ function Profile() {
           </button>
 
           <div className="warning" style={{ marginTop: '20px' }}>
-            <p>⚠️ SECURE APPLICATION - XSS PROTECTED! ⚠️</p>
+            <p>⚠️ SECURE APPLICATION - XSS PROTECTED ⚠️</p>
           </div>
         </div>
       </div>
