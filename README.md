@@ -1,10 +1,10 @@
 Web Application Security Project
 
-Student: Sarah Al Zubaidi (K2324855)  
+Student: Sarah Al Zubaidi 
 
-Project:SQL Injection and Broken Authentication Demonstration 
+Project: Vulnerable  vs Secure web application
 
 Supervisor: Hu Yuan
-This project demonstrates common web security vulnerabilities (SQL Injection and Broken Authentication) and their mitigation strategies, following OWASP Top 10 guidelines.
+This project demonstrates common web security vulnerabilities and their mitigation strategies, following OWASP Top 10 guidelines.
 
 
